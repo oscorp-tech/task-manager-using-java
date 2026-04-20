@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <h1>Task Master - AKS Demo</h1>
+    <form action="/add" method="post">
+        <input type="text" name="description" placeholder="New Task" required>
+        <button type="submit">Add Task</button>
+    </form>
+    <ul>
+        <li th:each="task : ${tasks}" th:text="${task.description}"></li>
+    </ul>
+</body>
+</html>
