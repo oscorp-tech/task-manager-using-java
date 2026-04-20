@@ -3,11 +3,11 @@ name: Java CI with Maven and Docker Hub
 on:
   push:
     branches: [ "main" ]
-  pull_request:            # Fixed typo: added the 'e' in request
+  pull_request:
     branches: [ "main" ]
 
 jobs:
-  build_and_test:          # Changed hyphen to underscore for safety
+  build_and_test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,12 +19,6 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3   
-
       - name: Build and Test with Maven
         run: mvn clean package
 
@@ -34,7 +28,7 @@ jobs:
           name: task-master-jar
           path: target/*.jar
 
-  push_to_docker_hub:      # Changed hyphen to underscore
+  push_to_docker_hub:
     needs: build_and_test 
     runs-on: ubuntu-latest
     if: github.event_name == 'push' 
@@ -47,6 +41,13 @@ jobs:
           name: task-master-jar
           path: target/
 
+      # QEMU and Buildx MUST be in the job that runs the 'docker build'
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -58,6 +59,8 @@ jobs:
         with:
           context: .
           push: true
+          # CRITICAL: This is what tells Docker to build for ARM64
+          platforms: linux/amd64,linux/arm64 
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/task-master:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/task-master:${{ github.sha }}
