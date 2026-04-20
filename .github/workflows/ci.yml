@@ -1,18 +1,16 @@
-name: Java CI with maven and DockerHub
+name: Java CI with Maven and Docker Hub
 
 on:
   push:
-    branches: [ "main" ] # triggers only when code is pushed to main
-  pull_requst:
-    branches: [ "main" ]  # triggers on PRs
+    branches: [ "main" ]
+  pull_request:            # Fixed typo: added the 'e' in request
+    branches: [ "main" ]
 
 jobs:
-  build-and-test:
+  build_and_test:          # Changed hyphen to underscore for safety
     runs-on: ubuntu-latest
     steps:
-      
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -21,41 +19,39 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build and test using maven
+      - name: Build and Test with Maven
         run: mvn clean package
 
-      - name: Upload build artifact
-        uses: actions/upload-artifact@4
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
         with:
           name: task-master-jar
           path: target/*.jar
 
-    push-to-docker-hub:
-      needs: build-and-test
-      runs-on: ubuntu-latest
-      if: github.event_name == 'push'
-      steps:
-        - uses: actions/checkout@4
+  push_to_docker_hub:      # Changed hyphen to underscore
+    needs: build_and_test 
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' 
+    steps:
+      - uses: actions/checkout@v4
 
-        - name: Download build artifact
-          uses: actions/download-artifact@4
-          with:
-            name: task-master-jar
-            path: target/
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: task-master-jar
+          path: target/
 
-        - name: Login to DockerHub
-          uses: docker/login-action@v3
-          with:
-            username: ${{ secrets.DOCKERHUB_USERNAME }}
-            password: ${{ secrets.DOCKERHUB_TOKEN }}      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-        - name: build and push docker image
-          uses: docker/build-push-action@v5
-          with:
-            context: .
-            push: true
-            tags: |
-              ${{ secrets.DOCKERHUB_USERNAME }}/task-master:latest
-              ${{ secrets.DOCKERHUB_USERNAME }}/task-master:${{ github.sha }}
-
-    
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/task-master:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/task-master:${{ github.sha }}
