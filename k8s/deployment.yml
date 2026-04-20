@@ -14,9 +14,8 @@ spec:
     spec:
       containers:
       - name: task-app
+        # Replace with your actual ACR name
         image: avesahmed/task-master:latest
-        ports:
-        - containerPort: 8080
         env:
         - name: DB_HOST
           value: "task-db"
@@ -25,4 +24,4 @@ spec:
         - name: DB_USER
           value: "postgres"
         - name: DB_PASSWORD
-          value: "password"
+          value: password
